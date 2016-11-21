@@ -140,6 +140,52 @@ RUN if [ ${CODEIGNITER} = true ]; then \
      docker-php-ext-install tokenizer \
 ;fi
 
+#####################################
+# EXIF extension:
+#####################################
+
+RUN docker-php-ext-install exif
+RUN docker-php-ext-enable exif
+
+#####################################
+# bz2 extension:
+#####################################
+
+RUN apt-get update && \
+  apt-get install -y libbz2-dev
+
+RUN docker-php-ext-install bz2
+RUN docker-php-ext-enable bz2
+
+#####################################
+# intl extension:
+#####################################
+
+RUN apt-get install -y libicu-dev
+
+RUN docker-php-ext-install intl
+RUN docker-php-ext-enable intl
+
+#####################################
+# Imagemagick extension:
+#####################################
+
+ARG INSTALL_IMAGEMAGICK_EXTENSION=false
+RUN if [ ${INSTALL_IMAGEMAGICK_EXTENSION} = true ]; then \
+  apt-get install -y libmagickwand-dev \
+;fi
+
+RUN pecl install imagick
+RUN docker-php-ext-enable imagick
+
+#####################################
+# clean cache and downloaded files
+#####################################
+
+RUN apt-get clean && \
+  rm -rf /tmp/* /var/tmp/*
+
+
 #
 #--------------------------------------------------------------------------
 # Final Touch

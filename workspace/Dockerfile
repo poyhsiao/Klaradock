@@ -235,6 +235,21 @@ RUN if [ ${INSTALL_AEROSPIKE_EXTENSION} = false ]; then \
 ;fi
 
 #####################################
+# Imagemagick
+#####################################
+User root
+
+ARG INSTALL_IMAGEMAGICK=true
+ENV INSTALL_IMAGEMAGICK ${INSTALL_IMAGEMAGICK}
+
+RUN if [ ${INSTALL_IMAGEMAGICK} = true ]; then \
+  add-apt-repository main && \
+  add-apt-repository universe && \
+  apt update && \
+  apt-get install -y imagemagick graphicsmagick \
+;fi
+
+#####################################
 # Non-root user : PHPUnit path
 #####################################
 
