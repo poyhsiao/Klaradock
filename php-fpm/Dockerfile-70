@@ -14,6 +14,11 @@ FROM laradock/php-fpm:7.0--1.2
 
 MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
 
+ARG DEBIAN_FRONTED=noninteractive
+
+RUN apt-get update && \
+  apt-get install apt-utils git -y && \
+  apt-get dist-upgrade -y
 #
 #--------------------------------------------------------------------------
 # Mandatory Software's Installation
@@ -42,23 +47,23 @@ MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
 #####################################
 
 ARG INSTALL_XDEBUG=false
+COPY ./xdebug.ini /tmp/xdebug.ini
 RUN if [ ${INSTALL_XDEBUG} = true ]; then \
     # Install the xdebug extension
-    pecl install xdebug && \
+    pecl install xdebug-2.5.0 && \
+    cp /tmp/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini && \
     docker-php-ext-enable xdebug \
 ;fi
-
-# Copy xdebug configration for remote debugging
-COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
 #####################################
 # MongoDB:
 #####################################
 
 ARG INSTALL_MONGO=false
+COPY ./mongodb.ini /tmp/mongodb.ini
 RUN if [ ${INSTALL_MONGO} = true ]; then \
-    # Install the mongodb extension
     pecl install mongodb && \
+    cp /tmp/mongodb.ini /usr/local/etc/php/conf.d/mongodb.ini && \
     docker-php-ext-enable mongodb \
 ;fi
 
@@ -69,7 +74,7 @@ RUN if [ ${INSTALL_MONGO} = true ]; then \
 ARG INSTALL_ZIP_ARCHIVE=false
 RUN if [ ${INSTALL_ZIP_ARCHIVE} = true ]; then \
     # Install the zip extension
-    pecl install zip && \
+    pecl install zip-1.13.5 && \
     docker-php-ext-enable zip \
 ;fi
 
@@ -101,8 +106,7 @@ RUN if [ ${INSTALL_MEMCACHED} = true ]; then \
 
 ARG INSTALL_AEROSPIKE_EXTENSION=false
 ENV INSTALL_AEROSPIKE_EXTENSION ${INSTALL_AEROSPIKE_EXTENSION}
-# Copy aerospike configration for remote debugging
-COPY ./aerospike.ini /usr/local/etc/php/conf.d/aerospike.ini
+COPY ./aerospike.ini /tmp/aerospike.ini
 RUN if [ ${INSTALL_AEROSPIKE_EXTENSION} = true ]; then \
     # Install the php aerospike extension
     curl -L -o /tmp/aerospike-client-php.tar.gz "https://github.com/luciano-jr/aerospike-client-php/archive/master.tar.gz" \
@@ -115,19 +119,20 @@ RUN if [ ${INSTALL_AEROSPIKE_EXTENSION} = true ]; then \
         && make install \
     ) \
     && rm /tmp/aerospike-client-php.tar.gz \
+## added from Kim
+    && cp /tmp/aerospike.ini /usr/local/etc/php/conf.d/aerospike.ini \
 ;fi
 
 #####################################
 # Opcache:
 #####################################
 ARG INSTALL_OPCACHE=false
+COPY ./opcache.ini /tmp/opcache.ini
 RUN if [ ${INSTALL_OPCACHE} = true ]; then \
     docker-php-ext-install opcache && \
-    docker-php-ext-enable opcache \
+    docker-php-ext-enable opcache && \
+    cp /tmp/opcache.ini /usr/local/etc/php/conf.d/opcache.ini \
 ;fi
-
-# Copy opcache configration
-COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
 #####################################
 # Codeigniter Modifications:
@@ -151,8 +156,7 @@ RUN docker-php-ext-enable exif
 # bz2 extension:
 #####################################
 
-RUN apt-get update && \
-  apt-get install -y libbz2-dev
+RUN apt-get install -y libbz2-dev --no-install-recommends
 
 RUN docker-php-ext-install bz2
 RUN docker-php-ext-enable bz2
@@ -172,7 +176,7 @@ RUN docker-php-ext-enable intl
 
 ARG INSTALL_IMAGEMAGICK_EXTENSION=false
 RUN if [ ${INSTALL_IMAGEMAGICK_EXTENSION} = true ]; then \
-  apt-get install -y libmagickwand-dev \
+  apt-get install libmagickwand-dev -y --no-install-recommends \
 ;fi
 
 RUN pecl install imagick
@@ -183,6 +187,7 @@ RUN docker-php-ext-enable imagick
 #####################################
 
 RUN apt-get clean && \
+  apt-get remove --purge apt-utils git -y && \
   rm -rf /tmp/* /var/tmp/*
 
 
@@ -192,8 +197,11 @@ RUN apt-get clean && \
 #--------------------------------------------------------------------------
 #
 
-ADD ./laravel.ini /usr/local/etc/php/conf.d
-ADD ./laravel.pool.conf /usr/local/etc/php-fpm.d/
+#ADD ./laravel.ini /usr/local/etc/php/conf.d
+#ADD ./laravel.pool.conf /usr/local/etc/php-fpm.d/
+
+COPY ./laravel.ini /usr/local/etc/php/conf.d
+COPY ./laravel.pool.conf /usr/local/etc/php-fpm.d/
 
 RUN rm -r /var/lib/apt/lists/*
 

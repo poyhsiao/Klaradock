@@ -1,2 +1,2 @@
 #!/bin/sh
-docker-compose up -d nginx mysql php-fpm redis elasticsearch
+docker-compose up -d workspace nginx mysql mongo php-fpm redis elasticsearch

@@ -46,7 +46,7 @@ ARG PUID=1000
 ARG PGID=1000
 RUN groupadd -g $PGID laradock && \
     useradd -u $PUID -g laradock -m laradock
-    
+
 #####################################
 # Set Timezone
 #####################################
@@ -86,15 +86,17 @@ COPY ./crontab /var/spool/cron/crontabs
 #####################################
 
 ARG INSTALL_XDEBUG=false
+COPY ./xdebug.ini /tmp/xdebug.ini
 RUN if [ ${INSTALL_XDEBUG} = true ]; then \
     # Load the xdebug extension only with phpunit commands
     apt-get update && \
-    apt-get install -y --force-yes php7.0-xdebug && \
+    apt-get install -y --allow-downgrades --allow-change-held-packages php7.0-xdebug && \
     sed -i 's/^/;/g' /etc/php/7.0/cli/conf.d/20-xdebug.ini && \
-    echo "alias phpunit='php -dzend_extension=xdebug.so /var/www/vendor/bin/phpunit'" >> ~/.bashrc \
+    echo "alias phpunit='php -dzend_extension=xdebug.so /var/www/vendor/bin/phpunit'" >> ~/.bashrc && \
+    cp /tmp/xdebug.ini /etc/php/7.0/cli/conf.d/xdebug.ini \
 ;fi
 # ADD for REMOTE debugging
-COPY ./xdebug.ini /etc/php/7.0/cli/conf.d/xdebug.ini
+#COPY ./xdebug.ini /etc/php/7.0/cli/conf.d/xdebug.ini
 
 #####################################
 # ssh:
@@ -102,8 +104,10 @@ COPY ./xdebug.ini /etc/php/7.0/cli/conf.d/xdebug.ini
 ARG INSTALL_WORKSPACE_SSH=false
 ENV INSTALL_WORKSPACE_SSH ${INSTALL_WORKSPACE_SSH}
 
-ADD insecure_id_rsa /tmp/id_rsa
-ADD insecure_id_rsa.pub /tmp/id_rsa.pub
+#ADD insecure_id_rsa /tmp/id_rsa
+#ADD insecure_id_rsa.pub /tmp/id_rsa.pub
+COPY ./insecure_id_rsa /tmp/id_rsa
+COPY ./insecure_id_rsa.pub /tmp/id_rsa.pub
 
 RUN if [ ${INSTALL_WORKSPACE_SSH} = true ]; then \
     rm -f /etc/service/sshd/down && \
@@ -125,7 +129,11 @@ ENV INSTALL_MONGO ${INSTALL_MONGO}
 RUN if [ ${INSTALL_MONGO} = true ]; then \
     # Install the mongodb extension
     pecl install mongodb && \
-    echo "extension=mongodb.so" >> /etc/php/7.0/cli/php.ini \
+    # echo "extension=mongodb.so" >> /etc/php/7.0/cli/php.ini \
+    echo "; configuration for php mongo module" >> /etc/php/7.0/mods-available/mognodb.ini && \
+    echo "; priority=30" >> /etc/php/7.0/mods-available/mognodb.ini && \
+    echo "extension=mongodb.so" >> /etc/php/7.0/mods-available/mognodb.ini && \
+    ln -s /etc/php/7.0/mods-available/mongodb.ini /etc/php/7.0/cli/conf.d/30-mongodb.ini \
 ;fi
 
 #####################################
@@ -232,21 +240,6 @@ RUN if [ ${INSTALL_AEROSPIKE_EXTENSION} = true ]; then \
 
 RUN if [ ${INSTALL_AEROSPIKE_EXTENSION} = false ]; then \
     rm /etc/php/7.0/cli/conf.d/aerospike.ini \
-;fi
-
-#####################################
-# Imagemagick
-#####################################
-User root
-
-ARG INSTALL_IMAGEMAGICK=true
-ENV INSTALL_IMAGEMAGICK ${INSTALL_IMAGEMAGICK}
-
-RUN if [ ${INSTALL_IMAGEMAGICK} = true ]; then \
-  add-apt-repository main && \
-  add-apt-repository universe && \
-  apt update && \
-  apt-get install -y imagemagick graphicsmagick \
 ;fi
 
 #####################################

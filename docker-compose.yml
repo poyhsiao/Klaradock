@@ -17,7 +17,7 @@ services:
         build:
             context: ./workspace
             args:
-                - INSTALL_XDEBUG=false
+                - INSTALL_XDEBUG=true
                 - INSTALL_MONGO=true
                 - INSTALL_NODE=true
                 - INSTALL_YARN=false
@@ -25,7 +25,6 @@ services:
                 - INSTALL_AEROSPIKE_EXTENSION=false
                 - COMPOSER_GLOBAL_INSTALL=true
                 - INSTALL_WORKSPACE_SSH=true
-                - INSTALL_IMAGEMAGICK=true
                 - PUID=1000
                 - PGID=1000
                 - NODE_VERSION=6
@@ -51,7 +50,7 @@ services:
                 - INSTALL_MONGO=true
                 - INSTALL_ZIP_ARCHIVE=true
                 - INSTALL_MEMCACHED=true
-                - INSTALL_OPCACHE=false
+                - INSTALL_OPCACHE=true
                 - INSTALL_AEROSPIKE_EXTENSION=false
                 - CODEIGNITER=true
                 - INSTALL_IMAGEMAGICK_EXTENSION=true
