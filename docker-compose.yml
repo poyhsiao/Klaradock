@@ -54,7 +54,7 @@ services:
                 - INSTALL_AEROSPIKE_EXTENSION=false
                 - CODEIGNITER=true
                 - INSTALL_IMAGEMAGICK_EXTENSION=true
-            dockerfile: Dockerfile-70
+            dockerfile: Dockerfile-71
         volumes_from:
             - applications
         expose:
