@@ -61,6 +61,8 @@ RUN apt-get update && \
         php7.1-memcached \
         php7.1-gd \
         php7.1-dev \
+        php7.1-bcmath \
+        php7.1-gmp \
         pkg-config \
         libcurl4-openssl-dev \
         libedit-dev \
