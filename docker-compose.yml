@@ -295,7 +295,9 @@ services:
 ### ElasticSearch Container #################################
 
     elasticsearch:
-        build: ./elasticsearch
+        build:
+            context: ./elasticsearch
+            dockerfile: Dockerfile-rtf
         volumes:
             - ./storage/elasticsearch/elasticsearch-data:/usr/share/elasticsearch/data
             - ./storage/elasticsearch/elasticsearch-pkugins:/usr/share/elasticsearch/data

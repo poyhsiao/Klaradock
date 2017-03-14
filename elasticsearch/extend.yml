@@ -1,0 +1,13 @@
+index:
+  analysis:
+    analyzer:
+      ik:
+        alias: [ik_nanlyzer]
+        type: org.elasticsearch.index.analysis.IkAnalyzerProvider
+      ik_max_word:
+        type: ik
+        use_smart: false
+      ik_smart:
+        type: ik
+        use_smart: true
+index.analysis.analyzer.default.type: ik

@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker-compose down
+$(which docker-compose) down

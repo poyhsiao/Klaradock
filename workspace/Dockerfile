@@ -296,7 +296,6 @@ USER root
 ARG INSTALL_SUPERVISOR=true
 ENV INSTALL_SUPERVISOR ${INSTALL_SUPERVISOR}
 
-COPY ./laravel-worker.conf /tmp/laravel-worker.conf
 COPY ./supervisord.conf /tmp/supervisord.conf
 
 RUN if [ ${INSTALL_SUPERVISOR} = true ]; then \
@@ -305,7 +304,6 @@ RUN if [ ${INSTALL_SUPERVISOR} = true ]; then \
   && groupadd supervisor \
   && usermod -a laradock -G supervisor \
   && mv /tmp/supervisord.conf /etc/supervisor/supervisord.conf \
-  && mv /tmp/laravel-worker.conf /etc/supervisor/conf.d/laravel-worker.conf \
 ;fi
 
 #####################################
