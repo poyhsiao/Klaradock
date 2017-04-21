@@ -1,2 +1,2 @@
 #!/bin/sh
-docker-compose build workspace nginx mysql mongo php-fpm redis elasticsearch
+docker-compose build workspace caddy mysql mongo php-fpm redis

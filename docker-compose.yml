@@ -26,6 +26,7 @@ services:
                 - INSTALL_SUPERVISOR=true
                 - COMPOSER_GLOBAL_INSTALL=true
                 - INSTALL_WORKSPACE_SSH=true
+                - INSTALL_PHATOMJS=false
                 - PUID=1000
                 - PGID=1000
                 - NODE_VERSION=6
@@ -38,6 +39,9 @@ services:
         ports:
            - "2222:22"
         tty: true
+        networks:
+          - frontend
+          - backend
 
 ### PHP-FPM Container #######################################
 # disable opcache in dev environment to prevent file cache issue
@@ -68,6 +72,8 @@ services:
         environment:
             # IMPORTANT: Set the Remote Interpreter entry matching name to `laravel`
             - PHP_IDE_CONFIG=serverName=laravel
+        networks:
+          - backend
 
 ### Nginx Server Container ##################################
 
@@ -81,11 +87,15 @@ services:
         volumes:
             - ./logs/nginx/:/var/log/nginx
             - ./nginx/sites/:/etc/nginx/sites-enabled
+            - ./nginx/ssl/:/etc/nginx/ssl
         ports:
             - "80:80"
             - "443:443"
         links:
             - php-fpm
+        networks:
+          - frontend
+          - backend
 
 ### Apache Server Container #################################
 
@@ -103,6 +113,9 @@ services:
             - "443:443"
         links:
             - php-fpm
+        networks:
+          - frontend
+          - backend
 
 ### HHVM Container ##########################################
 
@@ -114,6 +127,9 @@ services:
             - "9000"
         links:
             - workspace
+        networks:
+          - frontend
+          - backend
 
 ### MySQL Container #########################################
 
@@ -128,6 +144,8 @@ services:
             MYSQL_USER: kimhsiao
             MYSQL_PASSWORD: 1234
             MYSQL_ROOT_PASSWORD: 1234
+        networks:
+          - backend
 
 ### MariaDB Container #######################################
 
@@ -142,6 +160,8 @@ services:
             MYSQL_USER: kimhsiao
             MYSQL_PASSWORD: 1234
             MYSQL_ROOT_PASSWORD: 1234
+        networks:
+          - backend
 
 ### PostgreSQL Container ####################################
 
@@ -155,6 +175,8 @@ services:
             POSTGRES_DB: homestead
             POSTGRES_USER: kimhsiao
             POSTGRES_PASSWORD: 1234
+        networks:
+          - backend
 
 ### Neo4j Container #########################################
 
@@ -167,6 +189,8 @@ services:
             - NEO4J_AUTH=homestead:1234
         volumes:
             - ./storage/neo4j:/var/lib/neo4j/data
+        networks:
+          - backend
 
 ### MongoDB Container #######################################
 
@@ -176,6 +200,8 @@ services:
             - "27017:27017"
         volumes:
             - ./storage/mongo:/data/db
+        networks:
+          - backend
 
 ### Redis Container #########################################
 
@@ -185,6 +211,8 @@ services:
             - ./storage/redis:/data
         ports:
             - "6379:6379"
+        networks:
+          - backend
 
 ### Aerospike c Container ###################################
 
@@ -199,6 +227,8 @@ services:
             - "3001:3001"
             - "3002:3002"
             - "3003:3003"
+        networks:
+          - backend
 
 
 ### Memcached Container #####################################
@@ -211,6 +241,8 @@ services:
             - "11211:11211"
         links:
             - php-fpm
+        networks:
+          - backend
 
 ### Beanstalkd Container ####################################
 
@@ -221,6 +253,8 @@ services:
         privileged: true
         links:
             - php-fpm
+        networks:
+          - backend
 
 ### RabbitMQ Container ######################################
 
@@ -236,6 +270,8 @@ services:
             RABBITMQ_DEFAULT_PASS: guest
         links:
             - php-fpm
+        networks:
+          - backend
 
 ### Beanstalkd Console Container ############################
 
@@ -245,6 +281,8 @@ services:
             - "2080:2080"
         links:
             - beanstalkd
+        networks:
+          - backend
 
 ### Caddy Server Container ##################################
 
@@ -263,6 +301,9 @@ services:
             - ./logs/caddy:/var/log/caddy
         links:
             - php-fpm
+        networks:
+          - frontend
+          - backend
 
 ### phpMyAdmin Container ####################################
 
@@ -282,6 +323,9 @@ services:
             - "mysql:db"
             # for mariadb container
             # - "mariadb:db"
+        networks:
+          - frontend
+          - backend
 
 ### pgAdmin Container #######################################
 
@@ -291,6 +335,8 @@ services:
             - "5050:5050"
         links:
             - postgres
+        networks:
+          - frontend
 
 ### ElasticSearch Container #################################
 
@@ -306,4 +352,46 @@ services:
             - "9300:9300"
         links:
             - php-fpm
+        networks:
+          - frontend
 
+#### Networks Setup ###
+
+networks:
+  frontend:
+    driver: "bridge"
+  backend:
+    driver: "bridge"
+
+### Volumes Setup ####
+
+volumes:
+  mysql:
+    driver: "local"
+  postgres:
+    driver: "local"
+  memcached:
+    driver: "local"
+  redis:
+    driver: "local"
+  neo4j:
+    driver: "local"
+  mariadb:
+    driver: "local"
+  mongo:
+    driver: "local"
+  minio:
+    driver: "local"
+  phpmyadmin:
+    driver: "local"
+  pgadmin:
+    driver: "local"
+  aerospike:
+    driver: "local"
+  caddy:
+    driver: "local"
+  elasticsearch-data:
+    driver: "local"
+  elasticsearch-plugins:
+    driver: "local"
+  

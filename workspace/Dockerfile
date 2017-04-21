@@ -273,10 +273,10 @@ ARG INSTALL_YARN=false
 ENV INSTALL_YARN ${INSTALL_YARN}
 
 RUN if [ ${INSTALL_YARN} = true ]; then \
-    npm install -g yarn \
-    # curl -o- -L https://yarnpkg.com/install.sh | bash && \
-    # echo "" >> ~/.bashrc && \
-    # echo 'export PATH="$HOME/.yarn/bin:$PATH"' >> ~/.bashrc \
+    #npm install -g yarn \
+    curl -o- -L https://yarnpkg.com/install.sh | bash && \
+    echo "" >> ~/.bashrc && \
+    echo 'export PATH="$HOME/.yarn/bin:$PATH"' >> ~/.bashrc \
 ;fi
 
 # Add YARN binaries to root's .bashrc
@@ -297,6 +297,7 @@ ARG INSTALL_SUPERVISOR=true
 ENV INSTALL_SUPERVISOR ${INSTALL_SUPERVISOR}
 
 COPY ./supervisord.conf /tmp/supervisord.conf
+ADD ./supervisor.conf.d /tmp/supervisor.conf.d
 
 RUN if [ ${INSTALL_SUPERVISOR} = true ]; then \
   apt-get update \
@@ -304,6 +305,7 @@ RUN if [ ${INSTALL_SUPERVISOR} = true ]; then \
   && groupadd supervisor \
   && usermod -a laradock -G supervisor \
   && mv /tmp/supervisord.conf /etc/supervisor/supervisord.conf \
+  && mv /tmp/supervisor.conf.d/* /etc/supervisor/conf.d/ \
 ;fi
 
 #####################################
@@ -336,6 +338,19 @@ RUN if [ ${INSTALL_AEROSPIKE_EXTENSION} = false ]; then \
 ;fi
 
 #####################################
+# Install phatomJS
+#####################################
+USER root
+
+ARG INSTALL_PHATOMJS=true
+ENV INSTALL_PHATOMJS ${INSTALL_PHATOMJS}
+
+RUN if [ ${INSTALL_PHATOMJS} = true ]; then \
+    apt-get update \
+    && apt-get install -y --force-yes fontconfig freetype* phantomjs \
+;fi
+
+#####################################
 # Non-root user : PHPUnit path
 #####################################
 
@@ -356,5 +371,14 @@ USER root
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# execute supervisord if set
+RUN if [ ${INSTALL_AEROSPIKE_EXTENSION} = true ]; then \
+  supervisord -c /etc/supervisord.conf \
+;fi
+
+COPY start.sh /root/start.sh
+
 # Set default work directory
 WORKDIR /var/www
+
+CMD ["/bin/sh", "/root/start.sh"]
