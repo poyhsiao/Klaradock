@@ -20,7 +20,7 @@ services:
                 - INSTALL_XDEBUG=true
                 - INSTALL_MONGO=true
                 - INSTALL_NODE=true
-                - INSTALL_YARN=false
+                - INSTALL_YARN=true
                 - INSTALL_DRUSH=false
                 - INSTALL_AEROSPIKE_EXTENSION=false
                 - INSTALL_SUPERVISOR=true
