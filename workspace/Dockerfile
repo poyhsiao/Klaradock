@@ -274,6 +274,7 @@ ENV INSTALL_YARN ${INSTALL_YARN}
 
 RUN if [ ${INSTALL_YARN} = true ]; then \
     #npm install -g yarn \
+    [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh" && \
     curl -o- -L https://yarnpkg.com/install.sh | bash && \
     echo "" >> ~/.bashrc && \
     echo 'export PATH="$HOME/.yarn/bin:$PATH"' >> ~/.bashrc \
@@ -282,11 +283,11 @@ RUN if [ ${INSTALL_YARN} = true ]; then \
 # Add YARN binaries to root's .bashrc
 USER root
 
-# RUN if [ ${INSTALL_YARN} = true ]; then \
-    # echo "" >> ~/.bashrc && \
-    # echo 'export YARN_DIR="/home/laradock/.yarn"' >> ~/.bashrc && \
-    # echo 'export PATH="$YARN_DIR/bin:$PATH"' >> ~/.bashrc \
-# ;fi
+RUN if [ ${INSTALL_YARN} = true ]; then \
+    echo "" >> ~/.bashrc && \
+    echo 'export YARN_DIR="/home/laradock/.yarn"' >> ~/.bashrc && \
+    echo 'export PATH="$YARN_DIR/bin:$PATH"' >> ~/.bashrc \
+;fi
 
 #####################################
 # Supervisor for laravel queue
