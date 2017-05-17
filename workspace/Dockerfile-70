@@ -10,9 +10,85 @@
 #    https://hub.docker.com/r/laradock/workspace/tags/
 #
 
-FROM laradock/workspace:1.2
+# FROM laradock/workspace:1.2
+
+# MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
+
+## added from Kim for php7.0
+#--------------------------------------------------------------------------
+# Image Setup
+#--------------------------------------------------------------------------
+#
+
+FROM phusion/baseimage:latest
 
 MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
+
+RUN DEBIAN_FRONTEND=noninteractive
+RUN locale-gen en_US.UTF-8
+
+ENV LANGUAGE=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV LC_CTYPE=UTF-8
+ENV LANG=en_US.UTF-8
+ENV TERM xterm
+
+# Add the "PHP 7" ppa
+RUN apt-get install -y software-properties-common && \
+    add-apt-repository -y ppa:ondrej/php
+
+#
+#--------------------------------------------------------------------------
+# Software's Installation
+#--------------------------------------------------------------------------
+#
+
+# Install "PHP Extentions", "libraries", "Software's"
+RUN apt-get update && \
+    apt-get install -y --force-yes \
+        php7.0-cli \
+        php7.0-common \
+        php7.0-curl \
+        php7.0-json \
+        php7.0-xml \
+        php7.0-mbstring \
+        php7.0-mcrypt \
+        php7.0-mysql \
+        php7.0-pgsql \
+        php7.0-sqlite \
+        php7.0-sqlite3 \
+        php7.0-zip \
+        php7.0-memcached \
+        php7.0-gd \
+        php7.0-dev \
+        php7.0-bcmath \
+        php7.0-gmp \
+        pkg-config \
+        libcurl4-openssl-dev \
+        libedit-dev \
+        libssl-dev \
+        libxml2-dev \
+        xz-utils \
+        libsqlite3-dev \
+        sqlite3 \
+        git \
+        curl \
+        vim \
+        nano \
+        postgresql-client \
+    && apt-get clean
+
+#####################################
+# Composer:
+#####################################
+
+# Install composer and add its bin to the PATH.
+RUN curl -s http://getcomposer.org/installer | php && \
+    echo "export PATH=${PATH}:/var/www/vendor/bin" >> ~/.bashrc && \
+    mv composer.phar /usr/local/bin/composer
+
+# Source the bash
+RUN . ~/.bashrc
 
 #
 #--------------------------------------------------------------------------
@@ -129,11 +205,9 @@ ENV INSTALL_MONGO ${INSTALL_MONGO}
 RUN if [ ${INSTALL_MONGO} = true ]; then \
     # Install the mongodb extension
     pecl install mongodb && \
-    # echo "extension=mongodb.so" >> /etc/php/7.0/cli/php.ini \
-    echo "; configuration for php mongo module" >> /etc/php/7.0/mods-available/mognodb.ini && \
-    echo "; priority=30" >> /etc/php/7.0/mods-available/mognodb.ini && \
-    echo "extension=mongodb.so" >> /etc/php/7.0/mods-available/mognodb.ini && \
-    ln -s /etc/php/7.0/mods-available/mongodb.ini /etc/php/7.0/cli/conf.d/30-mongodb.ini \
+    echo "extension=mongodb.so" > /tmp/mongodb.ini && \
+    cp /tmp/mongodb.ini /etc/php/7.0/cli/conf.d/30-mongodb.ini && \
+    ln /etc/php/7.0/cli/conf.d/30-mongodb.ini /etc/php/7.0/mods-available/mongodb.ini \
 ;fi
 
 #####################################
@@ -215,6 +289,26 @@ RUN if [ ${INSTALL_YARN} = true ]; then \
 ;fi
 
 #####################################
+# Supervisor for laravel queue
+#####################################
+USER root
+
+ARG INSTALL_SUPERVISOR=true
+ENV INSTALL_SUPERVISOR ${INSTALL_SUPERVISOR}
+
+COPY ./supervisord.conf /tmp/supervisord.conf
+ADD ./supervisor.conf.d /tmp/supervisor.conf.d
+
+RUN if [ ${INSTALL_SUPERVISOR} = true ]; then \
+  apt-get update \
+  && apt-get install -y supervisor \
+  && groupadd supervisor \
+  && usermod -a laradock -G supervisor \
+  && mv /tmp/supervisord.conf /etc/supervisor/supervisord.conf \
+  && mv /tmp/supervisor.conf.d/* /etc/supervisor/conf.d/ \
+;fi
+
+#####################################
 # PHP Aerospike:
 #####################################
 USER root
@@ -244,6 +338,19 @@ RUN if [ ${INSTALL_AEROSPIKE_EXTENSION} = false ]; then \
 ;fi
 
 #####################################
+# Install phatomJS
+#####################################
+USER root
+
+ARG INSTALL_PHATOMJS=true
+ENV INSTALL_PHATOMJS ${INSTALL_PHATOMJS}
+
+RUN if [ ${INSTALL_PHATOMJS} = true ]; then \
+    apt-get update \
+    && apt-get install -y --force-yes fontconfig freetype* phantomjs \
+;fi
+
+#####################################
 # Non-root user : PHPUnit path
 #####################################
 
@@ -264,5 +371,14 @@ USER root
 RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# execute supervisord if set
+RUN if [ ${INSTALL_AEROSPIKE_EXTENSION} = true ]; then \
+  supervisord -c /etc/supervisord.conf \
+;fi
+
+COPY start.sh /root/start.sh
+
 # Set default work directory
 WORKDIR /var/www
+
+CMD ["/bin/sh", "/root/start.sh"]
