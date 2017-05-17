@@ -1,5 +1,5 @@
 .idea
 /logs
 /data
-.env
+.env*
 /storage

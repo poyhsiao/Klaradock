@@ -2,13 +2,13 @@ FROM alpine:3.4
 
 MAINTAINER Eric Pfeiffer <computerfr33k@users.noreply.github.com>
 
-ENV caddy_version=0.9.5
+ENV caddy_version=0.10.0
 
 LABEL caddy_version="$caddy_version" architecture="amd64"
 
 RUN apk update \
     && apk upgrade \
-    && apk add tar curl
+    && apk add tar curl git
 
 RUN curl --silent --show-error --fail --location \
         --header "Accept: application/tar+gzip, application/x-gzip, application/octet-stream" -o - \
