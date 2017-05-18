@@ -1,2 +1,2 @@
 #!/bin/sh
-docker-compose build workspace caddy mysql mongo php-fpm php-worker redis jenkins certbot
+docker-compose build workspace caddy mysql php-fpm php-worker redis jenkins certbot
