@@ -393,35 +393,6 @@ RUN if [ ${INSTALL_MC} = true ]; then\
     chmod +x /usr/local/bin/mc \
 ;fi
 
-#####################################
-# ImageMagick
-#####################################
-
-ARG INSTALL_IMAGICK=false
-RUN if [ ${INSTALL_IMAGICK} ]; then \
-  # Add source src
-  echo "deb-src http://deb.debian.org/debian jessie main" >> /etc/apt/sources.list && \
-  echo "deb-src http://deb.debian.org/debian jessie-updates main" >> /etc/apt/sources.list && \
-  echo "deb-src http://security.debian.org jessie/updates main" >> /etc/apt/sources.list && \
-  # Update and build required
-  apt-get update && \
-  apt-get build-dep imagemagick -y && \
-  apt-get install libwebp-dev -y && \
-  # Ready and go
-  mkdir /tmp/imagemagick && \
-  cd /tmp/imagemagick && \
-  curl -L -o ImageMagick.tar.gz http://www.imagemagick.org/download/ImageMagick.tar.gz && \
-  tar xf ImageMagick*.tar.gz && \
-  cd ImageMagic* && \
-  ./configure --prefix=/usr --without-x && \
-  make && \
-  make install && \
-  # Install php ext
-  pecl install imagick && \
-  echo "extnsion=imagick.so" > /etc/php/5.6/cli/conf.d/30-imagick.ini && \
-  ln /etc/php/5.6/cli/conf.d/30-imagick.ini /etc/php/5.6/mods-available/imagick.ini \
-;fi
-
 USER laradock
 
 #
