@@ -1,0 +1,121 @@
+# Docs: https://caddyserver.com/docs/caddyfile
+# n20.dev
+http://n20.dev {
+  redir https://n20.dev{uri}
+}
+
+https://n20.dev {
+  root /var/www/n20/public
+  fastcgi / php-fpm:9000 php {
+    index index.php
+  }
+
+  rewrite {
+    to {path} {path}/ /index.php?{query}
+  }
+
+  timeouts {
+    read 30s
+    write none
+  }
+
+  header / -Server
+
+  gzip
+  browse
+  tls self_signed
+  log /var/log/caddy/n20-access.log
+  errors /var/log/caddy/n20-error.log
+}
+
+# front.dev
+http://front.dev {
+  root /var/www/front/public
+  fastcgi / php-fpm:9000 php {
+    index index.php
+  }
+
+  rewrite {
+    r .*
+    ext /
+    to /index.php{query}
+  }
+
+  header / -Server
+
+  gzip
+  browse
+  tls self_signed
+  log /var/log/caddy/front-access.log
+  errors /var/log/caddy/n20-error.log
+}
+
+https://front.dev {
+  root /var/www/front/public
+  fastcgi / php-fpm:9000 php {
+    index index.php
+  }
+
+  rewrite {
+    r .*
+    ext /
+    to /index.php{query}
+  }
+
+  timeouts {
+    read 30s
+    write none
+  }
+
+  header / -Server
+
+  gzip
+  browse
+  tls self_signed
+  log /var/log/caddy/front-access.log
+  errors /var/log/caddy/n20-error.log
+}
+
+# myadm.dev
+http://myadm.dev {
+  redir https://myadm.dev{uri}
+}
+
+https://myadm.dev {
+  root /var/www/myadm
+  fastcgi / php-fpm:9000 php {
+    index index.php
+  }
+
+  header / -Server
+
+  timeouts {
+    read 30s
+    write none
+  }
+
+  gzip
+  browse
+  tls self_signed
+  log /var/log/caddy/myadm-access.log
+  errors /var/log/caddy/myadm-error.log
+}
+
+#0.0.0.0:80
+#root /var/www/public
+#fastcgi / php-fpm:9000 php {
+#    index index.php
+#}
+#rewrite {
+#    r .*
+#    ext /
+#    to /index.php?{query}
+#}
+#gzip
+#browse
+#log /var/log/caddy/access.log
+#errors /var/log/caddy/error.log
+#
+# Uncomment to enable TLS (HTTPS)
+# Change the first list to listen on port 443 when enabling TLS
+#tls self_signed

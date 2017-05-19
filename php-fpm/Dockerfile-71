@@ -105,12 +105,10 @@ RUN if [ ${INSTALL_SWOOLE} = true ]; then \
 #####################################
 
 ARG INSTALL_MONGO=false
-COPY ./mongodb.ini /tmp/mongodb.ini
 
 RUN if [ ${INSTALL_MONGO} = true ]; then \
     # Install the mongodb extension
     pecl install mongodb && \
-    cp /tmp/mongodb.ini /usr/local/etc/php/conf.d/mongdb.ini && \
     docker-php-ext-enable mongodb \
 ;fi
 

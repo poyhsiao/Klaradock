@@ -182,8 +182,7 @@ ENV INSTALL_MONGO ${INSTALL_MONGO}
 RUN if [ ${INSTALL_MONGO} = true ]; then \
     # Install the mongodb extension
     pecl install mongodb && \
-    echo "extension=mongodb.so" >> /etc/php/7.1/cli/conf.d/30-mongodb.ini && \
-    ln /etc/php/7.1/cli/conf.d/30-mongodb.ini /etc/php/7.1/mods-available/mongodb.ini \
+    echo "extension=mongodb.so" >> /etc/php/7.1/cli/conf.d/30-mongodb.ini \
 ;fi
 
 #####################################
