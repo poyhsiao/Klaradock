@@ -70,6 +70,18 @@ RUN if [ ${INSTALL_SOAP} = true ]; then \
 ;fi
 
 #####################################
+# PHP GMP
+#####################################
+
+ARG INSTALL_GMP=false
+ENV INSTALL_GMP ${INSTALL_GMP}
+
+RUN if [ ${INSTALL_GMP} = true ]; then \
+    # Install GMP extension
+    apt-get -y install php-gmp \
+;fi
+
+#####################################
 # Set Timezone
 #####################################
 
