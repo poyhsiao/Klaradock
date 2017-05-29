@@ -14,7 +14,39 @@
 
 FROM laradock/workspace:1.8-70
 
-MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
+MAINTAINER Kim Hsiao <white.shopping@gmail.com>
+
+#####################################
+# Basic environment:
+#####################################
+
+# Add a non-root user to prevent files being created with root permissions on host machine.
+ARG PUID=1000
+ARG PGID=1000
+
+ENV PUID ${PUID}
+ENV PGID ${PGID}
+
+RUN groupadd -g ${PGID} laradock && \
+    useradd -u ${PUID} -g laradock -m laradock && \
+    apt-get update -yqq
+
+#####################################
+# Set Timezone
+#####################################
+
+ARG TZ=UTC
+ENV TZ ${TZ}
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+#####################################
+# Install Supervisor:
+#####################################
+
+RUN apt-get upgrade -y && \
+    apt-get -y install supervisor && \
+    groupadd supervisor && \
+    usermod -a laradock -G supervisor
 
 #
 #--------------------------------------------------------------------------
@@ -64,14 +96,6 @@ RUN if [ ${INSTALL_GMP} = true ]; then \
     # Install GMP extension
     apt-get -y install php-gmp \
 ;fi
-
-#####################################
-# Set Timezone
-#####################################
-
-ARG TZ=UTC
-ENV TZ ${TZ}
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 #####################################
 # xDebug:
@@ -146,6 +170,26 @@ RUN if [ ${INSTALL_V8JS} = true ]; then \
 
 #
 #--------------------------------------------------------------------------
+# Optional Supervisord Configuration
+#--------------------------------------------------------------------------
+#
+# Modify the ./supervisor.conf file to match your App's requirements.
+# Make sure you rebuild your container with every change.
+#
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+#
+#--------------------------------------------------------------------------
+# Optional Software's Installation
+#--------------------------------------------------------------------------
+#
+# If you need to modify this image, feel free to do it right here.
+#
+    # -- Your awesome modifications go here -- #
+
+
+#
+#--------------------------------------------------------------------------
 # Final Touch
 #--------------------------------------------------------------------------
 #
@@ -156,3 +200,5 @@ RUN apt-get clean && \
 
 # Set default work directory
 WORKDIR /etc/supervisor/conf.d/
+
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-n"]

@@ -14,7 +14,39 @@
 
 FROM laradock/workspace:1.8-71
 
-MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
+MAINTAINER Kim Hsiao <white.shopping@gmail.com>
+
+#####################################
+# Basic environment:
+#####################################
+
+# Add a non-root user to prevent files being created with root permissions on host machine.
+ARG PUID=1000
+ARG PGID=1000
+
+ENV PUID ${PUID}
+ENV PGID ${PGID}
+
+RUN groupadd -g ${PGID} laradock && \
+    useradd -u ${PUID} -g laradock -m laradock && \
+    apt-get update -yqq
+
+#####################################
+# Set Timezone
+#####################################
+
+ARG TZ=UTC
+ENV TZ ${TZ}
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+
+#####################################
+# Install Supervisor:
+#####################################
+
+RUN apt-get upgrade -y && \
+    apt-get -y install supervisor && \
+    groupadd supervisor && \
+    usermod -a laradock -G supervisor
 
 #
 #--------------------------------------------------------------------------
@@ -62,17 +94,8 @@ ENV INSTALL_GMP ${INSTALL_GMP}
 
 RUN if [ ${INSTALL_GMP} = true ]; then \
     # Install GMP extension
-    apt-get update -yqq && \
     apt-get -y install php-gmp \
 ;fi
-
-#####################################
-# Set Timezone
-#####################################
-
-ARG TZ=UTC
-ENV TZ ${TZ}
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 #####################################
 # xDebug:
@@ -81,7 +104,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 ARG INSTALL_XDEBUG=false
 RUN if [ ${INSTALL_XDEBUG} = true ]; then \
     # Load the xdebug extension only with phpunit commands
-    apt-get update -yqq && \
     apt-get install -y --force-yes php-xdebug && \
     sed -i 's/^;//g' /etc/php/7.1/cli/conf.d/20-xdebug.ini && \
     echo "alias phpunit='php -dzend_extension=xdebug.so /var/www/vendor/bin/phpunit'" >> ~/.bashrc \
@@ -98,7 +120,6 @@ ARG INSTALL_MONGO=false
 ENV INSTALL_MONGO ${INSTALL_MONGO}
 RUN if [ ${INSTALL_MONGO} = true ]; then \
     # Install the mongodb extension
-    apt-get update -yqq && \
     pecl install mongodb && \
     echo "extension=mongodb.so" >> /etc/php/7.1/cli/conf.d/30-mongodb.ini \
 ;fi
@@ -115,7 +136,6 @@ COPY ./aerospike.ini /etc/php/7.1/cli/conf.d/aerospike.ini
 
 RUN if [ ${INSTALL_AEROSPIKE} = true ]; then \
     # Fix dependencies for PHPUnit within aerospike extension
-    apt-get update -yqq && \
     apt-get -y install sudo wget && \
 
     # Install the php aerospike extension
@@ -184,3 +204,5 @@ RUN apt-get clean && \
 
 # Set default work directory
 WORKDIR /etc/supervisor/conf.d/
+
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-n"]
