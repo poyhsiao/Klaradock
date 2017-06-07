@@ -406,6 +406,32 @@ RUN if [ ${INSTALL_MC} = true ]; then\
 
 USER laradock
 
+#####################################
+# MySQL client
+#####################################
+USER root
+
+ARG INSTALL_MYSQL_CLIENT=false
+ENV INSTALL_MYSQL_CLIENT ${INSTALL_MYSQL_CLIENT}
+
+RUN if [ ${INSTALL_MYSQL_CLIENT} = true ]; then \
+    apt-get update && \
+    apt-get install -y mysql-client \
+;fi
+
+#####################################
+# PostgreSQL client
+#####################################
+USER root
+
+ARG INSTALL_PGSQL_CLIENT=false
+ENV INSTALL_PGSQL_CLIENT ${INSTALL_PGSQL_CLIENT}
+
+RUN if [ ${INSTALL_PGSQL_CLIENT} = true ]; then \
+    apt-get update && \
+    apt-get install -y postgresql-client \
+;fi
+
 #
 #--------------------------------------------------------------------------
 # Final Touch
