@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker-compose exec elasticsearch bash
+$(which docker-compose) exec elasticsearch bash

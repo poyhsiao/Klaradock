@@ -2,6 +2,10 @@ FROM nginx:alpine
 
 MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
 
+ARG NGINX_HOST_HTTP_PORT_1=80
+ARG NGINX_HOST_HTTP_PORT_2=443
+ARG NGINX_HOST_HTTP_PORT_3=8080
+
 ADD nginx.conf /etc/nginx/
 
 ARG PHP_UPSTREAM=php-fpm
@@ -18,4 +22,4 @@ RUN apk update \
 
 CMD ["nginx"]
 
-EXPOSE 80 443
+EXPOSE ${NGINX_HOST_HTTP_PORT_1} ${NGINX_HOST_HTTP_PORT_2} ${NGINX_HOST_HTTP_PORT_3}

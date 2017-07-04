@@ -1,2 +1,3 @@
 #!/bin/sh
-docker-compose exec workspace bash
+
+$(which docker-compose) exec workspace bash

@@ -1,3 +1,3 @@
 #!/bin/sh
 
-docker-compose logs -f
+$((which docker-compose) logs -f

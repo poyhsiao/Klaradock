@@ -1,2 +1,3 @@
 #!/bin/sh
-docker-compose build --no-cache --pull --force-rm workspace caddy mysql php-fpm php-worker redis
+
+$(which docker-compose) build --no-cache --pull --force-rm workspace caddy mysql php-fpm php-worker redis
