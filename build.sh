@@ -1,2 +1,2 @@
 #!/bin/sh
-$(which docker-compose) build workspace caddy mysql php-fpm php-worker redis certbot
+$(which docker-compose) build workspace caddy mariadb php-fpm php-worker redis
